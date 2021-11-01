@@ -73,6 +73,37 @@ struct AppendTo<NullType, ListNode<T,U>> {
 	typedef ListNode<T,U> type;
 };
 
+template<typename ListNode, typename T> struct EraseIt;
+template<typename T, typename U>
+struct EraseIt<ListNode<T,U>,T>{ 
+	typedef U type;	
+};
+
+template<typename T, typename U, typename E>
+struct EraseIt<ListNode<T,U>,E> {
+	typedef ListNode<T,typename EraseIt<U,E>::type>	type;	
+};
+
+template<typename E>
+struct EraseIt<NullType,E>{
+	typedef NullType type;
+};
+
+template<typename ListNode, typename F, typename R> struct Replace;
+template<typename T, typename U, typename F, typename R>
+struct Replace<ListNode<T,U>,F,R> {
+	typedef ListNode<T, typename Replace<U,F,R>::type> type;
+};
+
+template<typename T, typename U, typename R>
+struct Replace<ListNode<T,U>,T,R> {
+	typedef ListNode<R,U> type;
+};
+
+template<typename F, typename R>
+struct Replace<NullType,F,R> {
+	typedef NullType type;
+};
 
 int main() {
 	typedef LIST_3(int, long, float) Some3Types;
@@ -82,5 +113,9 @@ int main() {
 	typedef AppendTo<Some3Types,double>::type Some4Types;
 	static_assert(ListLength<Some4Types>::value == 4);
 	static_assert(IndexOf<Some4Types,double>::value == 3);
+	static_assert(ListLength<EraseIt<Some3Types,long>::type>::value == 2);
+	static_assert(ListLength<Replace<Some4Types,double,unsigned int>::type>::value == 4);
+	static_assert(IndexOf<Replace<Some4Types,double,unsigned int>::type,int>::value == 0);
+	static_assert(IndexOf<Replace<Some4Types,double,unsigned int>::type,unsigned int>::value == 3);
 	return 0;
 }
